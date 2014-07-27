@@ -48,10 +48,11 @@ _.extend(AppScope.prototype, {
 
   //called by react components, event -> stores
   dispatch: function(event_name, payload){
+    var self = this;
     var promises = _.map(this.root._stores, function(store){
       var fn = store[event_name];
       if (typeof(fn) === 'function') {
-        this.beforeDispatch(event_name, payload);
+        self.beforeDispatch(event_name, payload);
         return fn.call(store, payload);
       }
     });
