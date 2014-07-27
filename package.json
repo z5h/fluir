@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "node scripts/run_tests.js",
-    "coverage": "istanbul cover scripts/run_tests.js"
+    "coverage": "istanbul cover scripts/run_tests.js",
+    "clean": "rm -rf lib/* coverage"
   },
   "repository": {
     "type": "git",
@@ -27,5 +28,11 @@
     "fs-plus": "^2.2.4",
     "istanbul": "^0.3.0",
     "nodeunit": "^0.9.0"
+  },
+  "dependencies": {
+    "eventemitter2": "^0.4.14",
+    "underscore": "^1.6.0",
+    "es6-promise": "^1.0.0",
+    "director": "^1.2.3"
   }
 }
