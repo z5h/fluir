@@ -1,4 +1,4 @@
 z5h.fluir
 =========
 
-Helps make React Flux apps.
+Dispatcher, router, store helper for React apps.
