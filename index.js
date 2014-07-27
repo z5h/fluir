@@ -51,7 +51,7 @@ _.extend(AppScope.prototype, {
     var promises = _.map(this.root._stores, function(store){
       var fn = store[event_name];
       if (typeof(fn) === 'function') {
-        beforeDispatch(event_name, payload);
+        this.beforeDispatch(event_name, payload);
         return fn.call(store, payload);
       }
     });
