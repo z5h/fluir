@@ -1,0 +1,31 @@
+{
+  "name": "z5h.fluir",
+  "version": "0.0.0",
+  "description": "Dispatcher, router, store helper for React apps.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node scripts/run_tests.js",
+    "coverage": "istanbul cover scripts/run_tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/z5h/z5h.fluir.git"
+  },
+  "keywords": [
+    "dispatcher",
+    "router",
+    "store",
+    "react"
+  ],
+  "author": "Mark Bolusmjak",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/z5h/z5h.fluir/issues"
+  },
+  "homepage": "https://github.com/z5h/z5h.fluir",
+  "devDependencies": {
+    "fs-plus": "^2.2.4",
+    "istanbul": "^0.3.0",
+    "nodeunit": "^0.9.0"
+  }
+}
