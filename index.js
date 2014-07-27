@@ -2,7 +2,7 @@ var
   _            = require('underscore'),
   Promise      = require('es6-promise').Promise,
   EventEmitter = require('eventemitter2').EventEmitter2,
-  Router = require('director').Router;
+  Router       = require('director').Router;
 
 var CHANGE_EVENT = 'change';
 
@@ -43,7 +43,7 @@ function AppScope(nameToStores){
 AppScope.prototype = Object.create(EventEmitter.prototype);
 _.extend(AppScope.prototype, {
 
-  beforeDispatch(event_name, payload){
+  beforeDispatch: function(event_name, payload){
   },
 
   //called by react components, event -> stores
