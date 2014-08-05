@@ -2,45 +2,64 @@ var
   _            = require('underscore'),
   Promise      = require('es6-promise').Promise,
   EventEmitter = require('eventemitter2').EventEmitter2,
-  Router       = require('director').Router;
-
-var CHANGE_EVENT = 'change';
+  Router       = require('director').Router,
+  CHANGE_EVENT = 'change';
 
 function AppScope(nameToStores){
-  EventEmitter.call(this);
-  if (nameToStores){
-    this._router = new Router();
-    this._values = nameToStores;
-    this._stores = _.values(nameToStores);
-    this.root = this;
 
-    var self = this;
-    var fireEvent = function(){
-      self.emitChange();
-    };
-    _.each(this._stores, function(store){
-      store.on(CHANGE_EVENT, fireEvent);
-      store.go = function(r){
-        self._router.setRoute(r);
-      };
-      _.chain(store)
-        .functions()
-        .filter(function(x){return x.charAt(0)==='/';})
-        .each(function(route){
-          var action = store[route];
-          self._router.on(route, _.bind(action, store));
-        });
-      _.chain(store)
-        .keys()
-        .filter(function(x){return x.charAt(0)==='/' && typeof(store[x])==='string';})
-        .each(function(route){
-          var actionName = store[route];
-          self._router.on(route, _.bind(store[actionName], store));
-        });
-    });
+  if (nameToStores){
+    EventEmitter.call(this);
+    _.extend(this, EventEmitter.prototype);
+    this.initRoot(nameToStores);
   }
 }
-AppScope.prototype = Object.create(EventEmitter.prototype);
+
+AppScope.prototype.initRoot = function(nameToStores){
+
+  this._router = new Router();
+  console.log('router', this._router);
+  this._values = nameToStores;
+  this._stores = _.values(nameToStores);
+  this.root = this;
+
+  var self = this;
+
+  _.each(this._stores, function(store){
+    //when a store fires a change event, we forward to the root view listening
+    store.on(CHANGE_EVENT, function(){
+      self.emitChange(store);
+    });
+
+    store.go = _.bind(self.go, self);
+    store.scope = function(values){
+      return self.push(values || {});
+    };
+    var actions = {};
+    _.chain(store)
+      .functions()
+      .filter(function(x){return x.charAt(0)==='/';})
+      .each(function(route){
+        console.log('setting up ' + route);
+        var action = function(){
+          console.log('responding to ' + route);
+          store[route].apply(store, arguments);
+          self.emitChange();
+        };
+        actions[route] = action;
+        self._router.on(route, action);
+      });
+    _.chain(store)
+      .keys()
+      .filter(function(x){return x.charAt(0)==='/' && typeof(store[x])==='string';})
+      .each(function(route){
+        console.log('setting up ' + route);
+        var actionName = store[route];
+        self._router.on(route, actions[actionName]);
+      });
+    self._router.init();
+  });
+};
+
 _.extend(AppScope.prototype, {
 
   beforeDispatch: function(event_name, payload){
@@ -59,6 +78,10 @@ _.extend(AppScope.prototype, {
     return Promise.all(promises);
   },
 
+  go: function(url){
+    console.log("going to", url);
+    this._router.setRoute(url);
+  },
 
   push: function(values){
     var appScope = new AppScope();
@@ -83,32 +106,12 @@ _.extend(AppScope.prototype, {
   },
 
   emitChange: function() {
+    console.log('emitChange');
     this.emit(CHANGE_EVENT);
-  },
-
-  /**
-   * @param {function} callback
-   */
-  addChangeListener: function(callback) {
-    this.on(CHANGE_EVENT, callback);
-  },
-
-  /**
-   * @param {function} callback
-   */
-  removeChangeListener: function(callback) {
-    this.removeListener(CHANGE_EVENT, callback);
   }
 });
 
-var AppScopeMixin = {
-  debounceTime : 10,
-  componentWillMount: function(){
-    this.callback = (function(){
-      this.forceUpdate();
-    }).bind(this);
-    this.props.scope.on('change', _.debounce(this.callback, this.debounceTime));
-  },
+var AppViewMixin = {
   scope : function(values){
     return values ? this.props.scope.push(values) : this.props.scope;
   },
@@ -125,5 +128,18 @@ var AppScopeMixin = {
   }
 };
 
+var RootAppViewMixin = {
+  debounceTime : 10,
+  componentWillMount: function(){
+    this.callback = (function(){
+      this.forceUpdate();
+    }).bind(this);
+    this.props.scope.on('change', _.debounce(this.callback, this.debounceTime));
+  }
+};
+
+_.extend(RootAppViewMixin, AppViewMixin);
+
 exports.AppScope = AppScope;
-exports.AppScopeMixin = AppScopeMixin;
+exports.AppViewMixin = AppViewMixin;
+exports.RootAppViewMixin = RootAppViewMixin;

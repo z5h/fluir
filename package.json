@@ -4,6 +4,9 @@
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
   "scripts": {
+    "jsx-example" : "jsx example/src example/lib",
+    "browserify-example" : "browserify example/lib/index.js > example/lib/browser.js",
+    "build-example" : "npm run jsx-example && npm run browserify-example",
     "test": "node scripts/run_tests.js",
     "coverage": "istanbul cover scripts/run_tests.js",
     "clean": "rm -rf lib/* coverage"
@@ -27,7 +30,10 @@
   "devDependencies": {
     "fs-plus": "^2.2.4",
     "istanbul": "^0.3.0",
-    "nodeunit": "^0.9.0"
+    "nodeunit": "^0.9.0",
+    "react": "^0.11.1",
+    "react-tools": "^0.11.1"
+
   },
   "dependencies": {
     "eventemitter2": "^0.4.14",
