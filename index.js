@@ -122,6 +122,11 @@ var ViewMixin = {
   },
   dispatch : function(event, payload){
     return this.props.scope.dispatch(event, payload);
+  },
+  dispatcher : function(event){
+    return _.bind(function(e){
+      this.props.scope.dispatch(event, e.target.value);
+    },this);
   }
 };
 
