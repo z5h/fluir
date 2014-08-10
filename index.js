@@ -5,7 +5,7 @@ var
   Router       = require('director').Router,
   CHANGE_EVENT = 'change';
 
-function AppScope(nameToStores){
+function Application(nameToStores){
 
   if (nameToStores){
     EventEmitter.call(this);
@@ -14,7 +14,7 @@ function AppScope(nameToStores){
   }
 }
 
-AppScope.prototype.initRoot = function(nameToStores){
+Application.prototype.initRoot = function(nameToStores){
 
   this._router = new Router();
   console.log('router', this._router);
@@ -39,10 +39,9 @@ AppScope.prototype.initRoot = function(nameToStores){
       .functions()
       .filter(function(x){return x.charAt(0)==='/';})
       .each(function(route){
-        console.log('setting up ' + route);
         var action = function(){
-          console.log('responding to ' + route);
-          store[route].apply(store, arguments);
+          var args = Array.prototype.slice.call(arguments);
+          store[route].apply(store, args);
           self.emitChange();
         };
         actions[route] = action;
@@ -56,11 +55,10 @@ AppScope.prototype.initRoot = function(nameToStores){
         var actionName = store[route];
         self._router.on(route, actions[actionName]);
       });
-    self._router.init();
   });
 };
 
-_.extend(AppScope.prototype, {
+_.extend(Application.prototype, {
 
   beforeDispatch: function(event_name, payload){
   },
@@ -79,12 +77,11 @@ _.extend(AppScope.prototype, {
   },
 
   go: function(url){
-    console.log("going to", url);
     this._router.setRoute(url);
   },
 
   push: function(values){
-    var appScope = new AppScope();
+    var appScope = new Application();
     appScope._values = values;
     appScope.parent = this;
     appScope.root = this.root;
@@ -111,7 +108,7 @@ _.extend(AppScope.prototype, {
   }
 });
 
-var AppViewMixin = {
+var ViewMixin = {
   scope : function(values){
     return values ? this.props.scope.push(values) : this.props.scope;
   },
@@ -128,7 +125,7 @@ var AppViewMixin = {
   }
 };
 
-var RootAppViewMixin = {
+var RootViewMixin = {
   debounceTime : 10,
   componentWillMount: function(){
     this.callback = (function(){
@@ -138,8 +135,8 @@ var RootAppViewMixin = {
   }
 };
 
-_.extend(RootAppViewMixin, AppViewMixin);
+_.extend(RootViewMixin, ViewMixin);
 
-exports.AppScope = AppScope;
-exports.AppViewMixin = AppViewMixin;
-exports.RootAppViewMixin = RootAppViewMixin;
+exports.Application = Application;
+exports.ViewMixin = ViewMixin;
+exports.RootViewMixin = RootViewMixin;

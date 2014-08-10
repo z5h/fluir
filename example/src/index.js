@@ -3,39 +3,20 @@
 var _     = require('underscore');
 var React = require('react');
 
-var AppScope          = require('../../index.js').AppScope;
-var AppViewMixin     = require('../../index.js').AppViewMixin;
-var RootAppViewMixin = require('../../index.js').RootAppViewMixin;
+var Application          = require('../../index.js').Application;
+var ViewMixin     = require('../../index.js').ViewMixin;
+var RootViewMixin = require('../../index.js').RootViewMixin;
 
 var PhoneBook = require('./phoneBook.js').PhoneBook;
+var loadExampleData = require('./phoneBook.js').loadExampleData;
 
-AppScope.prototype.beforeDispatch = function(event_name, payload){
+Application.prototype.beforeDispatch = function(event_name, payload){
   console.log(event_name, payload);
 };
 
 
 var phoneBook = new PhoneBook();
-phoneBook.addContact({
-  name : "Joe",
-  phoneNumbers : {
-    cell :   '555-1234',
-    work : '123-1234'
-  }
-});
-phoneBook.addContact({
-  name : "Sally",
-  phoneNumbers : {
-    cell :   '555-9876',
-    home : '123-9876'
-  }
-});
-phoneBook.addContact({
-  name : "Steve",
-  phoneNumbers : {
-    cell :   '555-0000',
-    work : '123-0000'
-  }
-});
+loadExampleData(phoneBook);
 
 var phoneBookStore = {
   phoneBook : phoneBook,
@@ -52,12 +33,7 @@ var phoneBookStore = {
   },
 
   //-- ROUTES -----------------------
-  '/':  function(){
-      this.viewData = {
-        viewClass : PhoneBookView,
-        scope : this.scope({phoneBook : this.phoneBook})
-      };
-    },
+  '/': '/phonebook',
   '/phonebook' : function(){
     this.viewData = {
       viewClass : PhoneBookView,
@@ -76,7 +52,7 @@ var phoneBookStore = {
   '/contact/:id/:phoneIndex' : function(id, phoneIndex){
     var contact = this.phoneBook.getContact(id);
     this.viewData = {
-      view : PhoneView,
+      viewClass : PhoneView,
       scope : this.scope({
         contact : contact,
         phoneIndex : phoneIndex
@@ -85,10 +61,10 @@ var phoneBookStore = {
   }
 };
 
-var appScope = new AppScope({phoneBookStore: phoneBookStore});
+var application = new Application({phoneBookStore: phoneBookStore});
 
 var RootAppView = React.createClass({
-  mixins: [RootAppViewMixin],
+  mixins: [RootViewMixin],
   render: function(){
     console.log('render');
     var viewData = this.resolve('phoneBookStore').viewData;
@@ -101,13 +77,13 @@ var RootAppView = React.createClass({
 });
 
 var PhoneBookView = React.createClass({
-  mixins: [AppViewMixin],
+  mixins: [ViewMixin],
   render : function(){
     var self = this;
     var phoneBook = this.resolve('phoneBook');
     var contactViews = _.map(phoneBook.contacts, function(contact){
       var scope = self.scope({contact: contact});
-      return <li><ContactView scope={scope}/></li>;
+      return <li key={contact.id}><ContactView scope={scope}/></li>;
     });
     return <div>
       <div>PhoneBook</div>
@@ -118,8 +94,9 @@ var PhoneBookView = React.createClass({
 
   }
 });
+
 var ContactView = React.createClass({
-  mixins: [AppViewMixin],
+  mixins: [ViewMixin],
   render : function(){
     var self = this;
     var contact = this.resolve('contact');
@@ -128,7 +105,7 @@ var ContactView = React.createClass({
         contact : contact,
         phoneKey : key
       });
-      return <li><PhoneView scope={scope}/></li>;
+      return <li key={key}><PhoneView scope={scope}/></li>;
     });
     return <div style={{border: '1px solid #aaa'}}>
       {contact.name}
@@ -142,7 +119,7 @@ var ContactView = React.createClass({
 });
 
 var PhoneView = React.createClass({
-  mixins: [AppViewMixin],
+  mixins: [ViewMixin],
   render : function(){
     var contact = this.resolve('contact');
     var phoneKey = this.resolve('phoneKey');
@@ -154,8 +131,9 @@ var PhoneView = React.createClass({
 });
 
 React.renderComponent(
-  <RootAppView scope={appScope} />,
+  <RootAppView scope={application} />,
   document.getElementById('app')
 );
 
-appScope.go('/');
+//appScope.go('/');
+application._router.init();

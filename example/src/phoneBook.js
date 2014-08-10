@@ -11,7 +11,8 @@ _.extend(PhoneBook.prototype, {
   },
 
   addContact: function(properties){
-    this.updateContact(this.nextNewContactId++, properties);
+    this.updateContact(this.nextNewContactId, properties);
+    this.nextNewContactId += 1;
   },
   updateContact: function(id, properties){
     var contact = this.getContact(id);
@@ -34,4 +35,29 @@ _.extend(PhoneBook.prototype, {
   }
 });
 
+function loadExampleData(phoneBook){
+  phoneBook.addContact({
+    name : "Joe",
+    phoneNumbers : {
+      cell :   '555-1234',
+      work : '123-1234'
+    }
+  });
+  phoneBook.addContact({
+    name : "Sally",
+    phoneNumbers : {
+      cell :   '555-9876',
+      home : '123-9876'
+    }
+  });
+  phoneBook.addContact({
+    name : "Steve",
+    phoneNumbers : {
+      cell :   '555-0000',
+      work : '123-0000'
+    }
+  });
+}
+
 exports.PhoneBook = PhoneBook;
+exports.loadExampleData = loadExampleData;
