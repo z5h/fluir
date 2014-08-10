@@ -7,7 +7,7 @@ _.extend(PhoneBook.prototype, {
   contacts : [],
   nextNewContactId : 0,
   getContact: function(id){
-    return _.findWhere(this.contacts, {id: id});
+    return _.findWhere(this.contacts, {id: parseInt(id)});
   },
 
   addContact: function(properties){
@@ -57,6 +57,7 @@ function loadExampleData(phoneBook){
       work : '123-0000'
     }
   });
+  console.log('phoneBook',phoneBook);
 }
 
 exports.PhoneBook = PhoneBook;

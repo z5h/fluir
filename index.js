@@ -40,6 +40,7 @@ Application.prototype.initRoot = function(nameToStores){
       .filter(function(x){return x.charAt(0)==='/';})
       .each(function(route){
         var action = function(){
+          console.log('in ' + route);
           var args = Array.prototype.slice.call(arguments);
           store[route].apply(store, args);
           self.emitChange();
@@ -61,6 +62,10 @@ Application.prototype.initRoot = function(nameToStores){
 _.extend(Application.prototype, {
 
   beforeDispatch: function(event_name, payload){
+  },
+
+  initRoute : function(route){
+    this._router.init(route);
   },
 
   //called by react components, event -> stores
@@ -117,11 +122,6 @@ var ViewMixin = {
   },
   dispatch : function(event, payload){
     return this.props.scope.dispatch(event, payload);
-  },
-  dispatcher : function(event){
-    return _.bind(function(e){
-      this.props.scope.dispatch(event, e.target.value);
-    },this);
   }
 };
 

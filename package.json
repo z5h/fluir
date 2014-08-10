@@ -1,13 +1,13 @@
 {
   "name": "z5h.fluir",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
   "scripts": {
     "jsx-example": "jsx example/src example/lib",
     "jsxw-example": "jsx -w example/src example/lib",
-    "browserify-example": "browserify example/lib/index.js > example/lib/browser.js",
-    "watchify-example": "watchify example/lib/index.js -o example/lib/browser.js",
+    "browserify-example": "browserify --debug example/lib/index.js > example/lib/browser.js",
+    "watchify-example": "watchify --debug example/lib/index.js -o example/lib/browser.js",
     "build-example": "npm run jsx-example && npm run browserify-example",
     "watch-example": "npm run jsxw-example & npm run watchify-example",
     "test": "node scripts/run_tests.js",

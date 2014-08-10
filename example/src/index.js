@@ -28,9 +28,6 @@ var phoneBookStore = {
   ADD_CONTACT : function(payload){
     this.phoneBook.addContact(payload);
   },
-  UPDATE_CONTACT: function(payload){
-    this.phoneBook.updateContact(payload.id, payload.properties);
-  },
 
   //-- ROUTES -----------------------
   '/': '/phonebook',
@@ -42,6 +39,7 @@ var phoneBookStore = {
   },
   '/contact/:id' : function(id){
     var contact = this.phoneBook.getContact(id);
+    console.log('contact',contact);
     this.viewData = {
       viewClass : ContactView,
       scope : this.scope({
@@ -49,13 +47,13 @@ var phoneBookStore = {
       })
     };
   },
-  '/contact/:id/:phoneIndex' : function(id, phoneIndex){
+  '/contact/:id/:phoneIndex' : function(id, phoneKey){
     var contact = this.phoneBook.getContact(id);
     this.viewData = {
       viewClass : PhoneView,
       scope : this.scope({
         contact : contact,
-        phoneIndex : phoneIndex
+        phoneKey : phoneKey
       })
     };
   }
@@ -90,8 +88,34 @@ var PhoneBookView = React.createClass({
       <ul>
         {contactViews}
       </ul>
+      <br/>
+      <CreateContactView scope={this.scope()}/>
     </div>;
+  }
+});
 
+var CreateContactView = React.createClass({
+  mixins: [ViewMixin],
+  handleClick : function(){
+    var phoneNumbers = {};
+    phoneNumbers[this.refs.phoneType.getDOMNode().value] =
+      this.refs.phoneNumber.getDOMNode().value;
+    this.dispatch('ADD_CONTACT', {
+      name : this.refs.name.getDOMNode().value,
+      phoneNumbers : phoneNumbers
+    });
+  },
+  render : function(){
+    return <div className='bordered pure-form pure-form-stacked'>
+      <div>New User:</div>
+      <label for="name">Name</label>
+      <input id='name' ref='name'/>
+      <label for="phoneType">Phone Type</label>
+      <input id='phoneType' ref='phoneType'/>
+      <label for="phoneNumber">Phone Number</label>
+      <input id='phoneNumber' ref='phoneNumber'/>
+      <button onClick={this.handleClick}>Add</button>
+    </div>;
   }
 });
 
@@ -107,8 +131,10 @@ var ContactView = React.createClass({
       });
       return <li key={key}><PhoneView scope={scope}/></li>;
     });
-    return <div style={{border: '1px solid #aaa'}}>
-      {contact.name}
+    return <div className='bordered'>
+      <a href={"#/contact/" + contact.id}>
+        {contact.name}
+      </a>
       <br/>
       Phones:
       <ul>
@@ -125,7 +151,10 @@ var PhoneView = React.createClass({
     var phoneKey = this.resolve('phoneKey');
     var phoneNumber = contact.phoneNumbers[phoneKey];
     return <span>
-    {phoneKey} : {phoneNumber}
+      <a href={"#/contact/" + contact.id + "/" + phoneKey}>
+      {phoneKey}
+      </a>
+     : {phoneNumber}
     </span>;
   }
 });
@@ -135,5 +164,4 @@ React.renderComponent(
   document.getElementById('app')
 );
 
-//appScope.go('/');
-application._router.init();
+application.initRoute('/');
