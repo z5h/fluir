@@ -4,7 +4,7 @@ z5h.fluir
 Dispatcher, router, store helper for React apps.
 
 Example app (see https://github.com/z5h/z5h.fluir/tree/master/example):
-```javascript
+```
 
 /** @jsx React.DOM */
 
