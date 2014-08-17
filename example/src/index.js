@@ -7,6 +7,7 @@ var Application          = require('../../index.js').Application;
 var ViewMixin     = require('../../index.js').ViewMixin;
 var RootViewMixin = require('../../index.js').RootViewMixin;
 
+var Clock = require('./clock.js').Clock;
 var PhoneBook = require('./phoneBook.js').PhoneBook;
 var loadExampleData = require('./phoneBook.js').loadExampleData;
 
@@ -17,6 +18,14 @@ Application.prototype.beforeDispatch = function(event_name, payload){
 
 var phoneBook = new PhoneBook();
 loadExampleData(phoneBook);
+var clock = new Clock();
+
+var clockStore = {
+  clock : clock,
+  on : function(event, f){
+    this.clock.on(event, f);
+  }
+};
 
 var phoneBookStore = {
   phoneBook : phoneBook,
@@ -59,17 +68,26 @@ var phoneBookStore = {
   }
 };
 
-var application = new Application({phoneBookStore: phoneBookStore});
+var application = new Application(
+  {
+    phoneBookStore: phoneBookStore,
+    clockStore : clockStore
+  }
+);
 
 var RootAppView = React.createClass({
   mixins: [RootViewMixin],
   render: function(){
     console.log('render');
+    var time = this.resolve('clockStore').clock.time();
     var viewData = this.resolve('phoneBookStore').viewData;
     if (viewData) {
-      return <viewData.viewClass scope={viewData.scope}/>;
+      return <div>
+        <div>Time : {time}</div>
+        <viewData.viewClass scope={viewData.scope}/>
+        </div>;
     } else {
-      return <div>:(</div>;
+      return <div>Time: {time}</div>;
     }
   }
 });
