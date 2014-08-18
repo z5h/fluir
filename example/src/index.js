@@ -35,7 +35,18 @@ var phoneBookStore = {
 
   //-- ACTIONS -----------------------
   ADD_CONTACT : function(payload){
-    this.phoneBook.addContact(payload);
+    //the immediate implementation of this feature
+    //this.phoneBook.addContact(payload);
+
+    //the implementation of this feature that mimics 1s network lag to complete
+    var phoneBook = this.phoneBook;
+    return new Promise(function(resolve, reject){
+      _.delay(function(){
+        phoneBook.addContact(payload);
+        resolve();
+      }, 1000);
+    });
+
   },
 
   //-- ROUTES -----------------------
@@ -78,7 +89,6 @@ var application = new Application(
 var RootAppView = React.createClass({
   mixins: [RootViewMixin],
   render: function(){
-    console.log('render');
     var time = this.resolve('clockStore').clock.time();
     var viewData = this.resolve('phoneBookStore').viewData;
     if (viewData) {
@@ -114,16 +124,27 @@ var PhoneBookView = React.createClass({
 
 var CreateContactView = React.createClass({
   mixins: [ViewMixin],
+  getInitialState: function(){
+    return {disabled : false}
+  },
   handleClick : function(){
+    this.setState({disabled : true});
+
     var phoneNumbers = {};
     phoneNumbers[this.refs.phoneType.getDOMNode().value] =
       this.refs.phoneNumber.getDOMNode().value;
+
     this.dispatch('ADD_CONTACT', {
       name : this.refs.name.getDOMNode().value,
       phoneNumbers : phoneNumbers
-    });
+    }).then(_.bind(function(){
+        this.setState({disabled : false});
+    }, this));
   },
   render : function(){
+    var button = this.state.disabled
+      ? <button disabled onClick={this.handleClick}>Add</button>
+      : <button onClick={this.handleClick}>Add</button>;
     return <div className='bordered pure-form pure-form-stacked'>
       <div>New User:</div>
       <label for="name">Name</label>
@@ -132,7 +153,7 @@ var CreateContactView = React.createClass({
       <input id='phoneType' ref='phoneType'/>
       <label for="phoneNumber">Phone Number</label>
       <input id='phoneNumber' ref='phoneNumber'/>
-      <button onClick={this.handleClick}>Add</button>
+      {button}
     </div>;
   }
 });

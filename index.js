@@ -17,7 +17,6 @@ function Application(nameToStores){
 Application.prototype.initRoot = function(nameToStores){
 
   this._router = new Router();
-  console.log('router', this._router);
   this._values = nameToStores;
   this._stores = _.values(nameToStores);
   this.root = this;
@@ -52,7 +51,6 @@ Application.prototype.initRoot = function(nameToStores){
       .keys()
       .filter(function(x){return x.charAt(0)==='/' && typeof(store[x])==='string';})
       .each(function(route){
-        console.log('setting up ' + route);
         var actionName = store[route];
         self._router.on(route, actions[actionName]);
       });
@@ -108,7 +106,6 @@ _.extend(Application.prototype, {
   },
 
   emitChange: function() {
-    console.log('emitChange');
     this.emit(CHANGE_EVENT);
   }
 });
