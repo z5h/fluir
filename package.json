@@ -1,6 +1,6 @@
 {
   "name": "z5h.fluir",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
   "scripts": {

@@ -10,6 +10,19 @@ _.extend(PhoneBook.prototype, {
     return _.findWhere(this.contacts, {id: parseInt(id)});
   },
 
+  addContact_with_lag: function(properties){
+    var run = _.bind(function(){
+      this.updateContact(this.nextNewContactId, properties);
+      this.nextNewContactId += 1;
+    }, this);
+    return new Promise(function(resolve, reject){
+      _.delay(function(){
+        run();
+        resolve();
+      }, 1000);
+    });
+  },
+
   addContact: function(properties){
     this.updateContact(this.nextNewContactId, properties);
     this.nextNewContactId += 1;

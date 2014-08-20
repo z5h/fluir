@@ -35,18 +35,7 @@ var phoneBookStore = {
 
   //-- ACTIONS -----------------------
   ADD_CONTACT : function(payload){
-    //the immediate implementation of this feature
-    //this.phoneBook.addContact(payload);
-
-    //the implementation of this feature that mimics 1s network lag to complete
-    var phoneBook = this.phoneBook;
-    return new Promise(function(resolve, reject){
-      _.delay(function(){
-        phoneBook.addContact(payload);
-        resolve();
-      }, 1000);
-    });
-
+    return this.phoneBook.addContact_with_lag(payload);
   },
 
   //-- ROUTES -----------------------
