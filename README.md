@@ -1,9 +1,9 @@
-z5h.fluir
+fluir
 =========
 
 Dispatcher, router, store helper for React apps.
 
-Example app (see https://github.com/z5h/z5h.fluir/tree/master/example):
+Example app (see https://github.com/z5h/fluir/tree/master/example):
 ```
 /** @jsx React.DOM */
 
