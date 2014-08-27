@@ -1,16 +1,51 @@
 /** @jsx React.DOM */
 
-var _     = require('underscore');
-var React = require('react');
+/**
+ * An Application is created by passing in a hash of names -> stores.
+ * Stores may expose functionality to the Application.
+ * At minimum, each store will be available to components via it's name.
+ */
+var Application = require('../../index.js').Application;
 
-var Application          = require('../../index.js').Application;
-var ViewMixin     = require('../../index.js').ViewMixin;
+/**
+ * The root react view(s) must use this mixin.
+ * In doing so, they will be wired into all of the store's
+ * on('change') callbacks. And will forceUpdate (repaint) when stores change.
+ */
 var RootViewMixin = require('../../index.js').RootViewMixin;
 
+/**
+ * All other views must use the ViewMixin.
+ * In doing so they can resove variables in their scope:
+ *   var myPerson = this.resolve('person'),
+ * they can extend the scope with new properties to pass into a child:
+ *   var scopeForChile = this.scope({newPropForChild : someValue});
+ * and they can dispatch events to the stores:
+ *   this.dispatch('CREATE_FOO', {fooProperty: fooValue});
+ */
+var ViewMixin = require('../../index.js').ViewMixin;
+
+
+var _     = require('underscore');
+var React = require('react/addons');
+
+/**
+ * Clock and Phonebook are plain javascript objects.
+ * Importantly, they implement on(event, callback), and will call
+ * on('change', callback) when their data changes.
+ */
 var Clock = require('./clock.js').Clock;
 var PhoneBook = require('./phoneBook.js').PhoneBook;
 var loadExampleData = require('./phoneBook.js').loadExampleData;
 
+/**
+ * This is used for animations.
+ */
+var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
+
+/**
+ * We can use this hook to log events.
+ */
 Application.prototype.beforeDispatch = function(event_name, payload){
   console.log(event_name, payload);
 };
@@ -20,6 +55,10 @@ var phoneBook = new PhoneBook();
 loadExampleData(phoneBook);
 var clock = new Clock();
 
+/**
+ * Create a clockStore.
+ * Registering for an event simply passes the call to the clock object.
+ */
 var clockStore = {
   clock : clock,
   on : function(event, f){
@@ -27,6 +66,22 @@ var clockStore = {
   }
 };
 
+/**
+ * Create a phoneBookStore.
+ * As a convetions, actions are UPPER CASE.
+ * When a view calls this.dispatch('EVENT_NAME', paramsMap),
+ * all stores who have a method called EVENT_NAME will have that method invoked.
+ * These methods should return promises to make used of the fact that the dispatcher will
+ * wrap all results in a Promise.all so that the callee can respond asynchronously to
+ * success or failure.
+ *
+ * Any function whose key-name starts with a '/' will be added to the routes table.
+ * An alias for a defined route can be added by declaring a key value pair as such:
+ * '/alias' : '/definedRoute'
+ *
+ * RootViewMixin instances will be told to update after the route functions are done.
+ * So the route functions can simply set some state that will be used during render.
+ */
 var phoneBookStore = {
   phoneBook : phoneBook,
   on : function(event, f){
@@ -35,7 +90,15 @@ var phoneBookStore = {
 
   //-- ACTIONS -----------------------
   ADD_CONTACT : function(payload){
+
+    /**
+     * We emulate lag here, but return a promise. In the UI, we make use of this to
+     * disable/reneable features accordingly.
+     */
     return this.phoneBook.addContact_with_lag(payload);
+  },
+  DELETE_CONTACT : function(payload){
+    return this.phoneBook.deleteContact(payload);
   },
 
   //-- ROUTES -----------------------
@@ -68,6 +131,12 @@ var phoneBookStore = {
   }
 };
 
+/**
+ * Create the application.
+ * Routes are rigged up now, so don't dynamically add them later.
+ * Make sure to call application.initRoute('/'); or similar to start the router.
+ * See the end of this file.
+ */
 var application = new Application(
   {
     phoneBookStore: phoneBookStore,
@@ -78,12 +147,20 @@ var application = new Application(
 var RootAppView = React.createClass({
   mixins: [RootViewMixin],
   render: function(){
+
     var time = this.resolve('clockStore').clock.time();
     var viewData = this.resolve('phoneBookStore').viewData;
+
     if (viewData) {
+      //our main content is driven by URL, so URL is a fine key to use for
+      //React's key functionality that tells it when something has changed.
+      var key = document.location.toString();
       return <div>
-        <div>Time : {time}</div>
-        <viewData.viewClass scope={viewData.scope}/>
+        <div className="time">Time : {time}</div>
+        <hr/>
+        <ReactCSSTransitionGroup transitionName="slide">
+          <viewData.viewClass key={key} scope={viewData.scope}/>
+        </ReactCSSTransitionGroup>
         </div>;
     } else {
       return <div>Time: {time}</div>;
@@ -97,13 +174,19 @@ var PhoneBookView = React.createClass({
     var self = this;
     var phoneBook = this.resolve('phoneBook');
     var contactViews = _.map(phoneBook.contacts, function(contact){
+      /**
+       * Here we create a new scope for the sub-component. It will have access to
+       * values in parent views that have not been shadowed.
+       */
       var scope = self.scope({contact: contact});
       return <li key={contact.id}><ContactView scope={scope}/></li>;
     });
     return <div>
       <div>PhoneBook</div>
       <ul>
-        {contactViews}
+        <ReactCSSTransitionGroup transitionName="example">
+          {contactViews}
+        </ReactCSSTransitionGroup>
       </ul>
       <br/>
       <CreateContactView scope={this.scope()}/>
@@ -149,6 +232,10 @@ var CreateContactView = React.createClass({
 
 var ContactView = React.createClass({
   mixins: [ViewMixin],
+  deleteSelf : function(){
+    this.dispatch('DELETE_CONTACT', this.resolve('contact').id);
+    return false;
+  },
   render : function(){
     var self = this;
     var contact = this.resolve('contact');
@@ -160,9 +247,13 @@ var ContactView = React.createClass({
       return <li key={key}><PhoneView scope={scope}/></li>;
     });
     return <div className='bordered'>
-      <a href={"#/contact/" + contact.id}>
+      [<a href="" onClick={this.deleteSelf}>
+        X
+      </a>]
+      <a cssStyle="float:left" href={"#/contact/" + contact.id}>
         {contact.name}
       </a>
+
       <br/>
       Phones:
       <ul>

@@ -9,6 +9,13 @@ _.extend(PhoneBook.prototype, {
   getContact: function(id){
     return _.findWhere(this.contacts, {id: parseInt(id)});
   },
+  deleteContact : function(id){
+    var index = _.indexOf(this.contacts, this.getContact(id));
+    if (index > -1){
+      this.contacts.splice(index, 1);
+    }
+    this.trigger("change");
+  },
 
   addContact_with_lag: function(properties){
     var run = _.bind(function(){
