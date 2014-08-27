@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Example Fluir App</title>
+  <style>
+    .bordered {
+      border: 1px solid #aaa;
+      width: 90%;
+    }
+
+    div.time{
+      font-size: x-large;
+    }
+
+    .example-enter {
+      opacity: 0.01;
+      transition: opacity .5s ease-in;
+    }
+
+    .example-enter.example-enter-active {
+      opacity: 1;
+    }
+
+    .example-leave {
+      opacity: 1;
+      transition: opacity .5s ease-in;
+    }
+
+    .example-leave.example-leave-active {
+      opacity: 0.01;
+    }
+
+
+    .slide-enter {
+      position: absolute;
+      left: 100%;
+      transition: left .5s ease-in;
+    }
+
+    .slide-enter.slide-enter-active {
+      position: absolute;
+      left: 0%;
+    }
+
+    .slide-leave {
+      position: absolute;
+      left: 0%;
+      transition: left .5s ease-in;
+    }
+
+    .slide-leave.slide-leave-active {
+      position: absolute;
+      left: -100%;
+    }
+
+  </style>
+</head>
+<body>
+  Example Fluir App
+  <hr/>
+  <div id="app" ></div>
+  <script type="text/javascript" src="lib/browser.js"></script>
+</body>
+</html>
