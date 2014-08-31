@@ -39,7 +39,6 @@ Application.prototype.initRoot = function(nameToStores){
       .filter(function(x){return x.charAt(0)==='/';})
       .each(function(route){
         var action = function(){
-          console.log('in ' + route);
           var args = Array.prototype.slice.call(arguments);
           store[route].apply(store, args);
           self.emitChange();
