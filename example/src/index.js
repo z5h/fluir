@@ -43,14 +43,6 @@ var loadExampleData = require('./phoneBook.js').loadExampleData;
  */
 var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
-/**
- * We can use this hook to log events.
- */
-Application.prototype.beforeDispatch = function(event_name, payload){
-  console.log(event_name, payload);
-};
-
-
 var phoneBook = new PhoneBook();
 loadExampleData(phoneBook);
 var clock = new Clock();
@@ -111,7 +103,6 @@ var phoneBookStore = {
   },
   '/contact/:id' : function(id){
     var contact = this.phoneBook.getContact(id);
-    console.log('contact',contact);
     this.viewData = {
       viewClass : ContactView,
       scope : this.scope({
@@ -146,6 +137,7 @@ var application = new Application(
 
 var RootAppView = React.createClass({
   mixins: [RootViewMixin],
+  test : 1,
   render: function(){
 
     var time = this.resolve('clockStore').clock.time();
@@ -157,6 +149,7 @@ var RootAppView = React.createClass({
       var key = document.location.toString();
       return <div>
         <div className="time">Time : {time}</div>
+        <div>{key}</div>
         <hr/>
         <ReactCSSTransitionGroup transitionName="slide">
           <viewData.viewClass key={key} scope={viewData.scope}/>

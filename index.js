@@ -1,133 +1,167 @@
 var
-  _            = require('underscore'),
-  Promise      = require('es6-promise').Promise,
+  _ = require('underscore'),
+  Promise = require('es6-promise').Promise,
   EventEmitter = require('eventemitter2').EventEmitter2,
-  Router       = require('director').Router,
+  Router = require('director').Router,
   CHANGE_EVENT = 'change';
 
-function Application(nameToStores){
-
-  if (nameToStores){
-    EventEmitter.call(this);
-    _.extend(this, EventEmitter.prototype);
-    this.initRoot(nameToStores);
+/**
+ * Scope
+ */
+function Scope(map){
+  if (map) {
+    this._values = map;
   }
 }
+Scope.prototype.push = function(values){
+  var scope = new Scope(values || {});
+  scope._parent = this;
+  return scope;
+};
 
-Application.prototype.initRoot = function(nameToStores){
+Scope.prototype.get = function(key){
+  var target = this;
+  var result = target._values[key];
+  while (result === undefined && target) {
+    target = target._parent;
+    result = target ? target._values[key] : result;
+  }
+  if (target) {
+    return result;
+  } else {
+    throw key + " not found";
+  }
+};
 
+/**
+ * RouteHandler
+ */
+function RouteHandler(routeDelegates){
   this._router = new Router();
-  this._values = nameToStores;
-  this._stores = _.values(nameToStores);
-  this.root = this;
-
+  var actions = {};
   var self = this;
-
-  _.each(this._stores, function(store){
-    //when a store fires a change event, we forward to the root view listening
-    store.on(CHANGE_EVENT, function(){
-      self.emitChange(store);
-    });
-
-    store.go = _.bind(self.go, self);
-    store.scope = function(values){
-      return self.push(values || {});
-    };
-    var actions = {};
-    _.chain(store)
+  _.each(routeDelegates, function(routeDelegate){
+    _.chain(routeDelegate)
       .functions()
-      .filter(function(x){return x.charAt(0)==='/';})
+      .filter(function(x){
+        return x.charAt(0) === '/';
+      })
       .each(function(route){
         var action = function(){
           var args = Array.prototype.slice.call(arguments);
-          store[route].apply(store, args);
+          routeDelegate[route].apply(routeDelegate, args);
           self.emitChange();
         };
         actions[route] = action;
         self._router.on(route, action);
       });
-    _.chain(store)
+
+    _.chain(routeDelegate)
       .keys()
-      .filter(function(x){return x.charAt(0)==='/' && typeof(store[x])==='string';})
+      .filter(function(x){
+        return x.charAt(0) === '/' && typeof(routeDelegate[x]) === 'string';
+      })
       .each(function(route){
-        var actionName = store[route];
+        var actionName = routeDelegate[route];
         self._router.on(route, actions[actionName]);
       });
   });
+}
+RouteHandler.prototype.initRoute = function(route){
+  this._router.init(route);
+};
+RouteHandler.prototype.go = function(url){
+  this._router.setRoute(url);
 };
 
-_.extend(Application.prototype, {
+/**
+ * DispatchHandler
+ */
+function DispatchHandler(listeners){
+  this._listeners = listeners;
+}
+DispatchHandler.prototype.dispatch = function(event_name, payload){
+  var self = this;
+  var promises = _.map(this._listeners, function(store){
+    var fn = store[event_name];
+    if (typeof(fn) === 'function') {
+      return fn.call(store, payload);
+    }
+  });
+  return Promise.all(promises);
+};
+DispatchHandler.prototype.emitChange = function(){
+  this.emit(CHANGE_EVENT);
+};
 
-  beforeDispatch: function(event_name, payload){
-  },
+/**
+ * Application
+ */
+function Application(nameToStores){
 
-  initRoute : function(route){
-    this._router.init(route);
-  },
+  this._stores = _.values(nameToStores);
 
-  //called by react components, event -> stores
-  dispatch: function(event_name, payload){
-    var self = this;
-    var promises = _.map(this.root._stores, function(store){
-      var fn = store[event_name];
-      if (typeof(fn) === 'function') {
-        self.beforeDispatch(event_name, payload);
-        return fn.call(store, payload);
-      }
+  EventEmitter.call(this);
+  _.extend(this, EventEmitter.prototype);
+
+  Scope.call(this, nameToStores);
+  this.get = Scope.prototype.get;
+
+  RouteHandler.call(this, this._stores);
+  _.extend(this, RouteHandler.prototype);
+
+  DispatchHandler.call(this, this._stores);
+  this.dispatch = _.bind(function(event, payload){
+    return DispatchHandler.prototype.dispatch.call(this, event, payload);
+  }, this);
+  this.emitChange = _.bind(function(){
+    return DispatchHandler.prototype.emitChange.call(this);
+  }, this);
+
+  var self = this;
+  _.each(this._stores, function(store){
+    //when a store fires a change event, we forward to the root view listening
+    store.on(CHANGE_EVENT, function(){
+      self.emitChange(store);
     });
-    return Promise.all(promises);
-  },
+    store.go = _.bind(self.go, self);
+    store.scope = _.bind(self.push, self);
+  });
+}
 
-  go: function(url){
-    this._router.setRoute(url);
-  },
+Application.prototype.push = function(map){
+  var result = Scope.prototype.push.call(this, map);
+  result.dispatch = this.dispatch;
+  result.emitChange = this.emitChange;
+  result.push = Application.prototype.push;
+  return result;
+};
 
-  push: function(values){
-    var appScope = new Application();
-    appScope._values = values;
-    appScope.parent = this;
-    appScope.root = this.root;
-    return appScope;
-  },
-
-  get: function(key){
-    var target = this;
-    var result = target._values[key];
-    while (result === undefined && target){
-      target = target.parent;
-      result = target ? target._values[key] : result;
-    }
-    if (target) {
-      return result;
-    } else {
-      throw key + " not found";
-    }
-  },
-
-  emitChange: function() {
-    this.emit(CHANGE_EVENT);
-  }
-});
-
+/**
+ * ViewMixin
+ */
 var ViewMixin = {
-  scope : function(values){
+  scope: function(values){
     return values ? this.props.scope.push(values) : this.props.scope;
   },
-  resolve : function(key){
+  resolve: function(key){
     return this.props.scope.get(key);
   },
-  dispatch : function(event, payload){
+  dispatch: function(event, payload){
     return this.props.scope.dispatch(event, payload);
   },
-  dispatcher : function(event){
+  dispatcher: function(event){
     return _.bind(function(e){
       this.props.scope.dispatch(event, e.target.value);
-    },this);
+    }, this);
   }
 };
 
+/**
+ * RootViewMixin
+ */
 var RootViewMixin = {
-  debounceTime : 10,
+  debounceTime: 10,
   componentWillMount: function(){
     this.callback = (function(){
       this.forceUpdate();
