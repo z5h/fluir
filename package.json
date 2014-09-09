@@ -1,6 +1,6 @@
 {
   "name": "fluir",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
   "scripts": {
@@ -31,13 +31,14 @@
   },
   "homepage": "https://github.com/z5h/fluir",
   "devDependencies": {
-    "fs-plus": "^2.2.4",
-    "istanbul": "^0.3.0",
+    "fs-plus": "^2.3.0",
+    "istanbul": "^0.3.2",
     "nodeunit": "^0.9.0",
+    "z5h.nodeunit-asserts": "^0.0.4",
     "react": "^0.11.1",
     "react-tools": "^0.11.1",
-    "watchify": "^1.0.1",
-    "browserify": "^5.9.1"
+    "watchify": "^1.0.2",
+    "browserify": "^5.11.1"
   },
   "dependencies": {
     "eventemitter2": "^0.4.14",

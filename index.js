@@ -1,98 +1,9 @@
 var
   _ = require('underscore'),
-  Promise = require('es6-promise').Promise,
   EventEmitter = require('eventemitter2').EventEmitter2,
-  Router = require('director').Router,
-  CHANGE_EVENT = 'change';
-
-/**
- * Scope
- */
-function Scope(map){
-  if (map) {
-    this._values = map;
-  }
-}
-Scope.prototype.push = function(values){
-  var scope = new Scope(values || {});
-  scope._parent = this;
-  return scope;
-};
-
-Scope.prototype.get = function(key){
-  var target = this;
-  var result = target._values[key];
-  while (result === undefined && target) {
-    target = target._parent;
-    result = target ? target._values[key] : result;
-  }
-  if (target) {
-    return result;
-  } else {
-    throw key + " not found";
-  }
-};
-
-/**
- * RouteHandler
- */
-function RouteHandler(routeDelegates){
-  this._router = new Router();
-  var actions = {};
-  var self = this;
-  _.each(routeDelegates, function(routeDelegate){
-    _.chain(routeDelegate)
-      .functions()
-      .filter(function(x){
-        return x.charAt(0) === '/';
-      })
-      .each(function(route){
-        var action = function(){
-          var args = Array.prototype.slice.call(arguments);
-          routeDelegate[route].apply(routeDelegate, args);
-          self.emitChange();
-        };
-        actions[route] = action;
-        self._router.on(route, action);
-      });
-
-    _.chain(routeDelegate)
-      .keys()
-      .filter(function(x){
-        return x.charAt(0) === '/' && typeof(routeDelegate[x]) === 'string';
-      })
-      .each(function(route){
-        var actionName = routeDelegate[route];
-        self._router.on(route, actions[actionName]);
-      });
-  });
-}
-RouteHandler.prototype.initRoute = function(route){
-  this._router.init(route);
-};
-RouteHandler.prototype.go = function(url){
-  this._router.setRoute(url);
-};
-
-/**
- * DispatchHandler
- */
-function DispatchHandler(listeners){
-  this._listeners = listeners;
-}
-DispatchHandler.prototype.dispatch = function(event_name, payload){
-  var self = this;
-  var promises = _.map(this._listeners, function(store){
-    var fn = store[event_name];
-    if (typeof(fn) === 'function') {
-      return fn.call(store, payload);
-    }
-  });
-  return Promise.all(promises);
-};
-DispatchHandler.prototype.emitChange = function(){
-  this.emit(CHANGE_EVENT);
-};
+  Scope = require('./lib/scope').Scope,
+  RouteHandler = require('./lib/routeHandler').RouteHandler,
+  DispatchHandler = require('./lib/dispatchHandler').DispatchHandler;
 
 /**
  * Application
@@ -115,13 +26,13 @@ function Application(nameToStores){
     return DispatchHandler.prototype.dispatch.call(this, event, payload);
   }, this);
   this.emitChange = _.bind(function(){
-    return DispatchHandler.prototype.emitChange.call(this);
+    return Application.prototype.emitChange.call(this);
   }, this);
 
   var self = this;
   _.each(this._stores, function(store){
     //when a store fires a change event, we forward to the root view listening
-    store.on(CHANGE_EVENT, function(){
+    store.on('change', function(){
       self.emitChange(store);
     });
     store.go = _.bind(self.go, self);
@@ -135,6 +46,10 @@ Application.prototype.push = function(map){
   result.emitChange = this.emitChange;
   result.push = Application.prototype.push;
   return result;
+};
+
+Application.prototype.emitChange = function(){
+  this.emit('change');
 };
 
 /**
