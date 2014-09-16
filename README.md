@@ -1,5 +1,8 @@
 fluir
 =========
+[![Build Status](https://travis-ci.org/z5h/fluir.svg?branch=master)](https://travis-ci.org/z5h/fluir)
+
+
 
 Dispatcher, router, store helper for React apps.
 
