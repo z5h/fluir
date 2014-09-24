@@ -1,6 +1,6 @@
 var
   _ = require('underscore'),
-  EventEmitter = require('eventemitter2').EventEmitter2,
+  EventEmitter = require('events').EventEmitter,
   Scope = require('./lib/scope').Scope,
   RouteHandler = require('./lib/routeHandler').RouteHandler,
   DispatchHandler = require('./lib/dispatchHandler').DispatchHandler;
