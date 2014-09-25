@@ -3,6 +3,14 @@
   "version": "0.2.4",
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
+
+  "browserify": {
+    "transform": [ "browserify-shim" ]
+  },
+  "browserify-shim": {
+    "underscore": "global:_"
+  },
+
   "scripts": {
     "jsx-example": "jsx example/src example/lib",
     "jsxw-example": "jsx -w example/src example/lib",
@@ -13,7 +21,7 @@
     "test": "node scripts/run_tests.js",
     "coverage": "istanbul cover scripts/run_tests.js",
     "clean": "rm -rf lib/* coverage",
-    "_browserify_debug": "browserify -i './node_modules/underscore/underscore.js' --debug -s fluir index.js > standalone/fluir_debug.js",
+    "_browserify_debug": "browserify --debug -s fluir index.js > standalone/fluir_debug.js",
     "_browserify_standalone": "browserify -s fluir index.js | uglifyjs - -c dead_code=false,unused=false > standalone/fluir.js",
     "standalone": "rm standalone/* && npm run _browserify_standalone && npm run _browserify_debug"
   },
@@ -42,7 +50,8 @@
     "react-tools": "^0.11.1",
     "watchify": "^1.0.2",
     "browserify": "^5.12.0",
-    "uglify-js": "^2.4.15"
+    "uglify-js": "^2.4.15",
+    "browserify-shim": "^3.7.0"
   },
   "dependencies": {
     "underscore": "^1.7.0",
