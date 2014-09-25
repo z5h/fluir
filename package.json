@@ -13,7 +13,7 @@
     "test": "node scripts/run_tests.js",
     "coverage": "istanbul cover scripts/run_tests.js",
     "clean": "rm -rf lib/* coverage",
-    "_browserify_debug": "browserify --debug -s fluir index.js > standalone/fluir_debug.js",
+    "_browserify_debug": "browserify -i './node_modules/underscore/underscore.js' --debug -s fluir index.js > standalone/fluir_debug.js",
     "_browserify_standalone": "browserify -s fluir index.js | uglifyjs - -c dead_code=false,unused=false > standalone/fluir.js",
     "standalone": "rm standalone/* && npm run _browserify_standalone && npm run _browserify_debug"
   },
@@ -41,7 +41,7 @@
     "react": "^0.11.1",
     "react-tools": "^0.11.1",
     "watchify": "^1.0.2",
-    "browserify": "^5.11.1",
+    "browserify": "^5.12.0",
     "uglify-js": "^2.4.15"
   },
   "dependencies": {
