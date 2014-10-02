@@ -207,7 +207,7 @@ var CreateContactView = React.createClass({
     }, this));
   },
   render : function(){
-    var buttons = this.state.disabled
+    var button = this.state.disabled
       ? <button disabled onClick={this.handleClick}>Add</button>
       : <button onClick={this.handleClick}>Add</button>;
     return <div className='bordered pure-form pure-form-stacked'>
