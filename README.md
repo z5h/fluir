@@ -10,7 +10,7 @@ See a live example [here](http://z5h.github.io/fluir/).
 ##install##
 ```npm install fluir```
 
-Or, if your page already includes reactjs and underscore, you an include [a standalone file](https://github.com/z5h/fluir/tree/master/standalone).
+Or, if your page already includes reactjs and underscore, you an include [a standalone file](https://github.com/z5h/fluir/tree/master/dist).
 
 ##use##
 

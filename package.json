@@ -1,29 +1,21 @@
 {
   "name": "fluir",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
-
   "browserify": {
-    "transform": [ "browserify-shim" ]
+    "transform": [
+      "browserify-shim"
+    ]
   },
   "browserify-shim": {
     "underscore": "global:_"
   },
-
   "scripts": {
-    "jsx-example": "jsx example/src example/lib",
-    "jsxw-example": "jsx -w example/src example/lib",
-    "browserify-example": "browserify --debug example/lib/index.js > example/lib/browser.js",
-    "watchify-example": "watchify --debug example/lib/index.js -o example/lib/browser.js",
-    "build-example": "npm run jsx-example && npm run browserify-example",
-    "watch-example": "npm run jsxw-example & npm run watchify-example",
     "test": "node scripts/run_tests.js",
     "coverage": "istanbul cover scripts/run_tests.js",
     "clean": "rm -rf lib/* coverage",
-    "_browserify_debug": "browserify --debug -s fluir index.js > standalone/fluir_debug.js",
-    "_browserify_standalone": "browserify -s fluir index.js | uglifyjs - -c dead_code=false,unused=false > standalone/fluir.js",
-    "standalone": "rm standalone/* && npm run _browserify_standalone && npm run _browserify_debug"
+    "dist": "gulp"
   },
   "repository": {
     "type": "git",
@@ -46,12 +38,21 @@
     "istanbul": "^0.3.2",
     "nodeunit": "^0.9.0",
     "z5h.nodeunit-asserts": "^0.0.4",
-    "react": "^0.11.1",
-    "react-tools": "^0.11.1",
+    "react": "^0.11.2",
+    "react-tools": "^0.11.2",
     "watchify": "^1.0.2",
     "browserify": "^5.12.0",
     "uglify-js": "^2.4.15",
-    "browserify-shim": "^3.7.0"
+    "browserify-shim": "^3.7.0",
+    "gulp": "^3.8.8",
+    "gulp-uglify": "^1.0.1",
+    "gulp-header": "^1.1.1",
+    "gulp-rename": "^1.2.0",
+    "del": "^0.1.3",
+    "vinyl-source-stream": "^1.0.0",
+    "vinyl-buffer": "^1.0.0",
+    "gulp-footer": "^1.0.5",
+    "reactify": "^0.14.0"
   },
   "dependencies": {
     "underscore": "^1.7.0",
