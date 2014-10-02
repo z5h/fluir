@@ -25,7 +25,7 @@ var banner = ['/*!',
     ''].join('\n');
 
 gulp.task('browserify', function() {
-    return browserify('./index.js')
+    return browserify('./index.js', {standalone: pkg.name})
         .bundle()
         //Pass desired output filename to vinyl-source-stream
         .pipe(source('fluir.js'))
@@ -40,7 +40,7 @@ gulp.task('browserify', function() {
 });
 
 gulp.task('browserify-example', function() {
-    return browserify('./example/src/index.js')
+    return browserify('./example/src/index.js', {standalone: pkg.name})
         .transform(reactify)
         .bundle()
         //Pass desired output filename to vinyl-source-stream
