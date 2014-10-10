@@ -90,3 +90,4 @@ _.extend(RootViewMixin, ViewMixin);
 exports.Application = Application;
 exports.ViewMixin = ViewMixin;
 exports.RootViewMixin = RootViewMixin;
+exports.Scope = Scope;

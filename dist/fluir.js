@@ -1,5 +1,5 @@
 /*!
- * fluir v0.2.8
+ * fluir v0.2.9
  * Url: https://github.com/z5h/fluir
  * Copyright (c) Mark Bolusmjak
  * License: MIT
@@ -98,6 +98,7 @@ _.extend(RootViewMixin, ViewMixin);
 exports.Application = Application;
 exports.ViewMixin = ViewMixin;
 exports.RootViewMixin = RootViewMixin;
+exports.Scope = Scope;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./lib/dispatchHandler":2,"./lib/routeHandler":3,"./lib/scope":4,"events":5}],2:[function(require,module,exports){
@@ -1910,4 +1911,4 @@ exports.isFunction = isFunction;
 exports.isArray = isArray;
 exports.now = now;
 },{}]},{},[1])(1)
-});;fluir.version = "0.2.8";
+});;fluir.version = "0.2.9";
