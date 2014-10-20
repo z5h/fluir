@@ -1,5 +1,5 @@
 /*!
- * fluir v0.2.9
+ * fluir v0.2.12
  * Url: https://github.com/z5h/fluir
  * Copyright (c) Mark Bolusmjak
  * License: MIT
@@ -99,8 +99,11 @@ exports.Application = Application;
 exports.ViewMixin = ViewMixin;
 exports.RootViewMixin = RootViewMixin;
 
+//export to make testing easier
 exports.Scope = Scope;
-Promise = require('es6-promise').Promise;
+//export for users of standalone build.
+//(perhaps this should be browserify-shim-ed instead)
+exports.Promise = require('es6-promise').Promise;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./lib/dispatchHandler":2,"./lib/routeHandler":3,"./lib/scope":4,"es6-promise":8,"events":5}],2:[function(require,module,exports){
@@ -2272,4 +2275,4 @@ Router.prototype.mount = function(routes, path) {
 }).call(this);
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":6}]},{},[1])(1)
-});;fluir.version = "0.2.9";
+});;fluir.version = "0.2.12";
