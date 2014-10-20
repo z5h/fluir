@@ -1,6 +1,6 @@
 {
   "name": "fluir",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
   "browserify": {
@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "underscore": "^1.7.0",
-    "es6-promise": "^1.0.0",
+    "es6-promise": "^2.0.0",
     "director": "^1.2.3"
   }
 }

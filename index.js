@@ -90,4 +90,9 @@ _.extend(RootViewMixin, ViewMixin);
 exports.Application = Application;
 exports.ViewMixin = ViewMixin;
 exports.RootViewMixin = RootViewMixin;
+
+//export to make testing easier
 exports.Scope = Scope;
+//export for users of standalone build.
+//(perhaps this should be browserify-shim-ed instead)
+exports.Promise = require('es6-promise').Promise;
