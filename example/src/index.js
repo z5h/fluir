@@ -53,8 +53,13 @@ var clock = new Clock();
  */
 var clockStore = {
   clock : clock,
-  on : function(event, f){
-    this.clock.on(event, f);
+  initialize : function(){
+
+    this.setState({time : this.clock.time()});
+
+    this.clock.on('change', function(){
+      this.setState({time : this.clock.time()})
+    }.bind(this));
   }
 };
 
@@ -76,8 +81,10 @@ var clockStore = {
  */
 var phoneBookStore = {
   phoneBook : phoneBook,
-  on : function(event, f){
-    this.phoneBook.on(event, f);
+  initialize : function(){
+    this.phoneBook.on('change',function(){
+      this.forceUpdate();
+    }.bind(this))
   },
 
   //-- ACTIONS -----------------------
@@ -96,29 +103,37 @@ var phoneBookStore = {
   //-- ROUTES -----------------------
   '/': '/phonebook',
   '/phonebook' : function(){
-    this.viewData = {
+    this.setState({
       viewClass : PhoneBookView,
-      scope : this.scope({phoneBook : this.phoneBook})
-    };
+      viewData : {
+        phoneBook : this.phoneBook
+      },
+      key : 'phonebook',
+      phoneBook : this.phoneBook
+    });
   },
   '/contact/:id' : function(id){
     var contact = this.phoneBook.getContact(id);
-    this.viewData = {
+    this.setState({
       viewClass : ContactView,
-      scope : this.scope({
+      viewData : {
         contact : contact
-      })
-    };
+      },
+      key : 'contact/' + id,
+      phoneBook : this.phoneBook
+    });
   },
   '/contact/:id/:phoneIndex' : function(id, phoneKey){
     var contact = this.phoneBook.getContact(id);
-    this.viewData = {
+    this.setState({
       viewClass : PhoneView,
-      scope : this.scope({
+      viewData : {
         contact : contact,
         phoneKey : phoneKey
-      })
-    };
+      },
+      key : 'contact/' + id + '/' + phoneKey,
+      phoneBook : this.phoneBook
+    });
   }
 };
 
@@ -140,19 +155,18 @@ var RootAppView = React.createClass({
   test : 1,
   render: function(){
 
-    var time = this.resolve('clockStore').clock.time();
+    var time = this.resolve('clockStore').time;
+    var viewClass = this.resolve('phoneBookStore').viewClass;
     var viewData = this.resolve('phoneBookStore').viewData;
+    var key = this.resolve('phoneBookStore').key;
 
-    if (viewData) {
-      //our main content is driven by URL, so URL is a fine key to use for
-      //React's key functionality that tells it when something has changed.
-      var key = document.location.toString();
+    if (viewData && viewClass) {
       return <div>
         <div className="time">Time : {time}</div>
         <div>{key}</div>
         <hr/>
         <ReactCSSTransitionGroup transitionName="slide">
-          <viewData.viewClass key={key} scope={viewData.scope}/>
+          <viewClass key={key} scope={viewData} dispatch={this.dispatch}/>
         </ReactCSSTransitionGroup>
         </div>;
     } else {
@@ -166,13 +180,14 @@ var PhoneBookView = React.createClass({
   render : function(){
     var self = this;
     var phoneBook = this.resolve('phoneBook');
+    var dispatch = this.dispatch;
     var contactViews = _.map(phoneBook.contacts, function(contact){
       /**
        * Here we create a new scope for the sub-component. It will have access to
        * values in parent views that have not been shadowed.
        */
       var scope = self.scope({contact: contact});
-      return <li key={contact.id}><ContactView scope={scope}/></li>;
+      return <li key={contact.id}><ContactView scope={scope} dispatch={dispatch}/></li>;
     });
     return <div>
       <div>PhoneBook</div>
@@ -182,7 +197,7 @@ var PhoneBookView = React.createClass({
         </ReactCSSTransitionGroup>
       </ul>
       <br/>
-      <CreateContactView scope={this.scope()}/>
+      <CreateContactView scope={this.scope()} dispatch={this.dispatch}/>
     </div>;
   }
 });
@@ -272,7 +287,7 @@ var PhoneView = React.createClass({
 });
 
 React.renderComponent(
-  <RootAppView scope={application} />,
+  <RootAppView application={application} />,
   document.getElementById('app')
 );
 
