@@ -66,9 +66,6 @@ var ViewMixin = {
     var result = React.addons.update(this.props.scope, {$merge : this.props});
     if (values) result = React.addons.update(result, {$merge: values});
     return result;
-  },
-  componentWillMount : function(){
-    this.dispatch = this.props.dispatch;
   }
 };
 

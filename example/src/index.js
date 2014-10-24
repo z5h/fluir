@@ -180,14 +180,14 @@ var PhoneBookView = React.createClass({
   render : function(){
     var self = this;
     var phoneBook = this.resolve('phoneBook');
-    var dispatch = this.dispatch;
+    var dispatch = this.resolve('dispatch');
     var contactViews = _.map(phoneBook.contacts, function(contact){
       /**
        * Here we create a new scope for the sub-component. It will have access to
        * values in parent views that have not been shadowed.
        */
       var scope = self.scope({contact: contact});
-      return <li key={contact.id}><ContactView scope={scope} dispatch={dispatch}/></li>;
+      return <li key={contact.id}><ContactView scope={scope}/></li>;
     });
     return <div>
       <div>PhoneBook</div>
@@ -197,7 +197,7 @@ var PhoneBookView = React.createClass({
         </ReactCSSTransitionGroup>
       </ul>
       <br/>
-      <CreateContactView scope={this.scope()} dispatch={this.dispatch}/>
+      <CreateContactView scope={this.scope()}/>
     </div>;
   }
 });
@@ -214,7 +214,8 @@ var CreateContactView = React.createClass({
     phoneNumbers[this.refs.phoneType.getDOMNode().value] =
       this.refs.phoneNumber.getDOMNode().value;
 
-    this.dispatch('ADD_CONTACT', {
+    var dispatch = this.resolve('dispatch');
+    dispatch('ADD_CONTACT', {
       name : this.refs.name.getDOMNode().value,
       phoneNumbers : phoneNumbers
     }).then(_.bind(function(){
@@ -241,7 +242,8 @@ var CreateContactView = React.createClass({
 var ContactView = React.createClass({
   mixins: [ViewMixin],
   deleteSelf : function(){
-    this.dispatch('DELETE_CONTACT', this.resolve('contact').id);
+
+    this.resolve('dispatch')('DELETE_CONTACT', this.resolve('contact').id);
     return false;
   },
   render : function(){
