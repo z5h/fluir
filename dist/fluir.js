@@ -1,5 +1,5 @@
 /*!
- * fluir v0.2.12
+ * fluir v1.0.0
  * Url: https://github.com/z5h/fluir
  * Copyright (c) Mark Bolusmjak
  * License: MIT
@@ -22684,4 +22684,4 @@ module.exports = warning;
 
 }).call(this,require('_process'))
 },{"./emptyFunction":125,"_process":6}]},{},[1])(1)
-});;fluir.version = "0.2.12";
+});;fluir.version = "1.0.0";
