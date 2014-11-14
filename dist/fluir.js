@@ -1,5 +1,5 @@
 /*!
- * fluir v1.0.0
+ * fluir v1.0.2
  * Url: https://github.com/z5h/fluir
  * Copyright (c) Mark Bolusmjak
  * License: MIT
@@ -53,12 +53,18 @@ function Application(nameToStores){
     store.state = function(namespace){
       return state.value[namespace || name];
     };
+    store.addStateChangeListener = function(callback){
+      state.addListener('change', callback);
+    };
+    store.removeStateChangeListener = function(callback){
+      state.removeListener('change', callback);
+    };
     state.replaceState(name, {});
   });
   _.each(this._stores, function(store){
     store.initialize && store.initialize();
   });
-  state.on('change', function(){
+  state.on('change', function(namespace, value){
     this.emit('change', state.value);
   }.bind(this));
 }
@@ -69,6 +75,9 @@ function Application(nameToStores){
 var ViewMixin = {
   resolve : function(key){
     return this.props[key] || (this.props.scope && this.props.scope[key]);
+  },
+  resolveWith : function(key, props){
+    return props[key] || (props.scope && props.scope[key]);
   },
   scope: function(values){
     var result = React.addons.update(this.props.scope, {$merge : this.props});
@@ -85,6 +94,10 @@ var RootViewMixin = {
   resolve : function(key){
     var scope = this.props.application.state.value;
     return this.props[key] || scope[key];
+  },
+  resolveWith : function(key, props){
+    var scope = props.application.state.value;
+    return props[key] || scope[key];
   },
   scope: function(values){
     var scope = this.props.application.state.value;
@@ -210,7 +223,7 @@ State.prototype.setState = function(namespace, nextState){
     command[namespace] = {$set: nextState};
   }
   this.value = React.addons.update(this.value, command);
-  this.emit('change', namespace);
+  this.emit('change', namespace, this.value);
   return this.value;
 };
 
@@ -218,7 +231,7 @@ State.prototype.replaceState = function(namespace, nextState){
   var command = {};
   command[namespace] = {$set: nextState};
   this.value = React.addons.update(this.value, command);
-  this.emit('change', namespace);
+  this.emit('change', namespace, this.value);
   return this.value;
 };
 
@@ -226,7 +239,7 @@ State.prototype.forceUpdate = function(namespace){
   var command = {};
   command[namespace] = {$set: this.value[namespace]};
   this.value = React.addons.update(this.value, command);
-  this.emit('change', namespace);
+  this.emit('change', namespace, this.value);
 };
 
 exports.State = State;
@@ -22681,4 +22694,4 @@ module.exports = warning;
 
 }).call(this,require('_process'))
 },{"./emptyFunction":125,"_process":6}]},{},[1])(1)
-});;fluir.version = "1.0.0";
+});;fluir.version = "1.0.2";

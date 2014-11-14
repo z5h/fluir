@@ -45,12 +45,18 @@ function Application(nameToStores){
     store.state = function(namespace){
       return state.value[namespace || name];
     };
+    store.addStateChangeListener = function(callback){
+      state.addListener('change', callback);
+    };
+    store.removeStateChangeListener = function(callback){
+      state.removeListener('change', callback);
+    };
     state.replaceState(name, {});
   });
   _.each(this._stores, function(store){
     store.initialize && store.initialize();
   });
-  state.on('change', function(){
+  state.on('change', function(namespace, value){
     this.emit('change', state.value);
   }.bind(this));
 }
@@ -61,6 +67,9 @@ function Application(nameToStores){
 var ViewMixin = {
   resolve : function(key){
     return this.props[key] || (this.props.scope && this.props.scope[key]);
+  },
+  resolveWith : function(key, props){
+    return props[key] || (props.scope && props.scope[key]);
   },
   scope: function(values){
     var result = React.addons.update(this.props.scope, {$merge : this.props});
@@ -77,6 +86,10 @@ var RootViewMixin = {
   resolve : function(key){
     var scope = this.props.application.state.value;
     return this.props[key] || scope[key];
+  },
+  resolveWith : function(key, props){
+    var scope = props.application.state.value;
+    return props[key] || scope[key];
   },
   scope: function(values){
     var scope = this.props.application.state.value;

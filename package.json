@@ -1,6 +1,6 @@
 {
   "name": "fluir",
-  "version": "1.0.0", "private": true,
+  "version": "1.0.2", "private": true,
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
   "browserify": {
