@@ -223,7 +223,7 @@ State.prototype.setState = function(namespace, nextState){
     command[namespace] = {$set: nextState};
   }
   this.value = React.addons.update(this.value, command);
-  this.emit('change', namespace, this.value);
+  this.emit('change', namespace, this.value[namespace]);
   return this.value;
 };
 
@@ -231,7 +231,7 @@ State.prototype.replaceState = function(namespace, nextState){
   var command = {};
   command[namespace] = {$set: nextState};
   this.value = React.addons.update(this.value, command);
-  this.emit('change', namespace, this.value);
+  this.emit('change', namespace, this.value[namespace]);
   return this.value;
 };
 
@@ -239,7 +239,7 @@ State.prototype.forceUpdate = function(namespace){
   var command = {};
   command[namespace] = {$set: this.value[namespace]};
   this.value = React.addons.update(this.value, command);
-  this.emit('change', namespace, this.value);
+  this.emit('change', namespace, this.value[namespace]);
 };
 
 exports.State = State;
