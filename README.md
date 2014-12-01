@@ -1,6 +1,11 @@
 #fluir#
 [![Build Status](https://travis-ci.org/z5h/fluir.svg?branch=master)](https://travis-ci.org/z5h/fluir)
 
+##important##
+Upgrading to 1.0 will break many things for you.
+Sorry.
+The good news is I'm using 1.0 for real work. So it's in a more stable/usable state.
+
 ##what##
 
 Dispatcher, router, store helper for React apps.

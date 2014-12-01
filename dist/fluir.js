@@ -1,5 +1,5 @@
 /*!
- * fluir v0.2.12
+ * fluir v1.0.2
  * Url: https://github.com/z5h/fluir
  * Copyright (c) Mark Bolusmjak
  * License: MIT
@@ -8,11 +8,11 @@
 (function (global){
 var
   _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null),
+  React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null),
   EventEmitter = require('events').EventEmitter,
-  Scope = require('./lib/scope').Scope,
+  State = require('./lib/state').State,
   RouteHandler = require('./lib/routeHandler').RouteHandler,
   DispatchHandler = require('./lib/dispatchHandler').DispatchHandler;
-
 /**
  * Application
  */
@@ -23,60 +23,66 @@ function Application(nameToStores){
   EventEmitter.call(this);
   _.extend(this, EventEmitter.prototype);
 
-  Scope.call(this, nameToStores);
-  this.get = Scope.prototype.get;
-
   RouteHandler.call(this, this._stores);
   _.extend(this, RouteHandler.prototype);
 
-  DispatchHandler.call(this, this._stores);
-  this.dispatch = _.bind(function(event, payload){
-    return DispatchHandler.prototype.dispatch.call(this, event, payload);
-  }, this);
-  this.emitChange = _.bind(function(){
-    return Application.prototype.emitChange.call(this);
-  }, this);
+  this.dispatchHandler = new DispatchHandler(this._stores);
+  this.dispatch = _.bind(this.dispatchHandler.dispatch, this.dispatchHandler);
 
-  var self = this;
-  _.each(this._stores, function(store){
-    //when a store fires a change event, we forward to the root view listening
-    store.on('change', function(){
-      self.emitChange(store);
-    });
-    store.go = _.bind(self.go, self);
-    store.scope = _.bind(self.push, self);
+
+  //keep track of state.
+  //when it changes, we emit a change and the payload is a state object (with a dispatcher)
+  var state = new State();
+  this.state = state;
+
+  var go = _.bind(this.go, this);
+
+  _.each(nameToStores, function(store, name){
+    //add a 'go' function to each store so they can write code like
+    //this.go('some/url')
+    store.go = go;
+    store.setState = function(params){
+      return state.setState(name, params);
+    };
+    store.replaceState = function(params){
+      return state.replaceState(name, params);
+    };
+    store.forceUpdate = function(){
+      state.forceUpdate(name);
+    };
+    store.state = function(namespace){
+      return state.value[namespace || name];
+    };
+    store.addStateChangeListener = function(callback){
+      state.addListener('change', callback);
+    };
+    store.removeStateChangeListener = function(callback){
+      state.removeListener('change', callback);
+    };
+    state.replaceState(name, {});
   });
+  _.each(this._stores, function(store){
+    store.initialize && store.initialize();
+  });
+  state.on('change', function(namespace, value){
+    this.emit('change', state.value);
+  }.bind(this));
 }
-
-Application.prototype.push = function(map){
-  var result = Scope.prototype.push.call(this, map);
-  result.dispatch = this.dispatch;
-  result.emitChange = this.emitChange;
-  result.push = Application.prototype.push;
-  return result;
-};
-
-Application.prototype.emitChange = function(){
-  this.emit('change');
-};
 
 /**
  * ViewMixin
  */
 var ViewMixin = {
+  resolve : function(key){
+    return this.props[key] || (this.props.scope && this.props.scope[key]);
+  },
+  resolveWith : function(key, props){
+    return props[key] || (props.scope && props.scope[key]);
+  },
   scope: function(values){
-    return values ? this.props.scope.push(values) : this.props.scope;
-  },
-  resolve: function(key){
-    return this.props.scope.get(key);
-  },
-  dispatch: function(event, payload){
-    return this.props.scope.dispatch(event, payload);
-  },
-  dispatcher: function(event){
-    return _.bind(function(e){
-      this.props.scope.dispatch(event, e.target.value);
-    }, this);
+    var result = React.addons.update(this.props.scope, {$merge : this.props});
+    if (values) result = React.addons.update(result, {$merge: values});
+    return result;
   }
 };
 
@@ -85,28 +91,40 @@ var ViewMixin = {
  */
 var RootViewMixin = {
   debounceTime: 10,
+  resolve : function(key){
+    var scope = this.props.application.state.value;
+    return this.props[key] || scope[key];
+  },
+  resolveWith : function(key, props){
+    var scope = props.application.state.value;
+    return props[key] || scope[key];
+  },
+  scope: function(values){
+    var scope = this.props.application.state.value;
+    var result = React.addons.update(scope, {$merge : this.props});
+    if (values)
+      result = React.addons.update(result, {$merge: values});
+    return result;
+  },
   componentWillMount: function(){
+    var app = this.props.application;
     this.callback = (function(){
       this.forceUpdate();
     }).bind(this);
-    this.props.scope.on('change', _.debounce(this.callback, this.debounceTime));
+    this.dispatch = app.dispatch;
+    app.on('change', _.debounce(this.callback, this.debounceTime));
   }
 };
-
-_.extend(RootViewMixin, ViewMixin);
 
 exports.Application = Application;
 exports.ViewMixin = ViewMixin;
 exports.RootViewMixin = RootViewMixin;
-
-//export to make testing easier
-exports.Scope = Scope;
 //export for users of standalone build.
 //(perhaps this should be browserify-shim-ed instead)
 exports.Promise = require('es6-promise').Promise;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/dispatchHandler":2,"./lib/routeHandler":3,"./lib/scope":4,"es6-promise":8,"events":5}],2:[function(require,module,exports){
+},{"./lib/dispatchHandler":2,"./lib/routeHandler":3,"./lib/state":4,"es6-promise":8,"events":5}],2:[function(require,module,exports){
 (function (global){
 var
   _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null),
@@ -155,7 +173,6 @@ function defineRouteHandler(Router){
           var action = function(){
             var args = Array.prototype.slice.call(arguments);
             routeDelegate[route].apply(routeDelegate, args);
-            self.emitChange();
           };
           actions[route] = action;
           self._router.on(route, action);
@@ -188,36 +205,47 @@ exports.RouteHandler = defineRouteHandler(Router);
 exports.defineRouteHandler = defineRouteHandler;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"director":7}],4:[function(require,module,exports){
-/**
- * Scope
- */
-function Scope(map){
-  if (map) {
-    this._values = map;
-  }
+(function (global){
+var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null);
+var EventEmitter = require('events').EventEmitter;
+
+function State(){
+  EventEmitter.call(this);
+  this.value = {};
 }
-Scope.prototype.push = function(values){
-  var scope = new Scope(values || {});
-  scope._parent = this;
-  return scope;
-};
+State.prototype = Object.create(EventEmitter.prototype);
+State.prototype.constructor = State;
 
-Scope.prototype.get = function(key){
-  var target = this;
-  var result = target._values[key];
-  while (result === undefined && target) {
-    target = target._parent;
-    result = target ? target._values[key] : result;
-  }
-  if (target) {
-    return result;
+State.prototype.setState = function(namespace, nextState){
+  var command = {};
+  if (this.value[namespace]){
+    command[namespace] = {$merge: nextState};
   } else {
-    throw key + " not found";
+    command[namespace] = {$set: nextState};
   }
+  this.value = React.addons.update(this.value, command);
+  this.emit('change', namespace, this.value[namespace]);
+  return this.value;
 };
 
-exports.Scope = Scope;
-},{}],5:[function(require,module,exports){
+State.prototype.replaceState = function(namespace, nextState){
+  var command = {};
+  command[namespace] = {$set: nextState};
+  this.value = React.addons.update(this.value, command);
+  this.emit('change', namespace, this.value[namespace]);
+  return this.value;
+};
+
+State.prototype.forceUpdate = function(namespace){
+  var command = {};
+  command[namespace] = {$set: this.value[namespace]};
+  this.value = React.addons.update(this.value, command);
+  this.emit('change', namespace, this.value[namespace]);
+};
+
+exports.State = State;
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"events":5}],5:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2275,4 +2303,4 @@ Router.prototype.mount = function(routes, path) {
 }).call(this);
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":6}]},{},[1])(1)
-});;fluir.version = "0.2.12";
+});;fluir.version = "1.0.2";

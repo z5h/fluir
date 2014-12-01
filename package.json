@@ -1,6 +1,6 @@
 {
   "name": "fluir",
-  "version": "0.2.12",
+  "version": "1.0.2",
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
   "browserify": {
@@ -9,7 +9,8 @@
     ]
   },
   "browserify-shim": {
-    "underscore": "global:_"
+    "underscore":  "global:_",
+    "react/addons": "global:React"
   },
   "scripts": {
     "test": "node scripts/run_tests.js",
@@ -38,7 +39,6 @@
     "istanbul": "^0.3.2",
     "nodeunit": "^0.9.0",
     "z5h.nodeunit-asserts": "^0.0.4",
-    "react": "^0.11.2",
     "react-tools": "^0.11.2",
     "watchify": "^1.0.2",
     "browserify": "^5.12.0",
@@ -57,6 +57,7 @@
   "dependencies": {
     "underscore": "^1.7.0",
     "es6-promise": "^2.0.0",
-    "director": "^1.2.3"
+    "director": "^1.2.3",
+    "react": "^0.11.2"
   }
 }

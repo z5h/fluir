@@ -8,7 +8,7 @@ var reactify = require('reactify');
 var browserify = require('browserify');
 
 var source = require('vinyl-source-stream');
-var buffer = require('vinyl-buffer')
+var buffer = require('vinyl-buffer');
 
 var del = require('del');
 var pkg = require('./package.json');
