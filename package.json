@@ -9,7 +9,8 @@
     ]
   },
   "browserify-shim": {
-    "underscore": "global:_"
+    "underscore":  "global:_",
+    "react/addons": "global:React"
   },
   "scripts": {
     "test": "node scripts/run_tests.js",
