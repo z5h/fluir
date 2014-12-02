@@ -1,5 +1,5 @@
 /*!
- * fluir v1.0.2
+ * fluir v1.0.3
  * Url: https://github.com/z5h/fluir
  * Copyright (c) Mark Bolusmjak
  * License: MIT
@@ -2303,4 +2303,4 @@ Router.prototype.mount = function(routes, path) {
 }).call(this);
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":6}]},{},[1])(1)
-});;fluir.version = "1.0.2";
+});;fluir.version = "1.0.3";

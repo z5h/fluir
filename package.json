@@ -1,6 +1,6 @@
 {
   "name": "fluir",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Dispatcher, router, store helper for React apps.",
   "main": "index.js",
   "browserify": {
@@ -26,7 +26,8 @@
     "dispatcher",
     "router",
     "store",
-    "react"
+    "react",
+    "flux"
   ],
   "author": "Mark Bolusmjak",
   "license": "MIT",
