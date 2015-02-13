@@ -10,8 +10,6 @@ The good news is I'm using 1.0 for real work. So it's in a more stable/usable st
 
 Dispatcher, router, store helper for React apps.
 
-See a live example [here](http://z5h.github.io/fluir/).
-
 
 ##install##
 ```npm install fluir```
